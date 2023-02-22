@@ -13,7 +13,9 @@ public class VATSetup : MonoBehaviour
     [SerializeField] private AnimationClip animationClip;
     [SerializeField] private CustomRenderTexture renderTexture;
     [SerializeField] private Material material;
+    
     private int amountFramesToRecord;
+    private int amountFramesWidth;
     private Mesh mesh;
     private GraphicsBuffer gpuVertices;
     private GraphicsBuffer[] gpuVerticesArray;
@@ -22,17 +24,20 @@ public class VATSetup : MonoBehaviour
     private int textureWidth;
     private int frameWidth;
     private int vertexCount => mesh.vertexCount;
+    
     private void Awake()
     {
         mesh = skinnedMeshRenderer.sharedMesh;
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = Mathf.ClosestPowerOfTwo((int)(animationClip.frameRate * animationClip.length));
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
-        textureWidth = frameWidth * (int)Mathf.Sqrt(amountFramesToRecord);
+        
+        textureWidth = frameWidth * amountFramesWidth;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
-        renderTexture = new CustomRenderTexture(frameWidth, frameWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         renderTexture.enableRandomWrite = true;
         
         kernelID = 0;
@@ -40,29 +45,41 @@ public class VATSetup : MonoBehaviour
         
         threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
 
-        //FillGPUVerticesArray();
+        FillGPUVerticesArray();
 
-        // for (int i = 0; i < amountFramesToRecord; i++)
-        // {
-        //     WriteToVAT(i);
-        // }
-        //
-        WriteToVAT(0);
+        for (int i = 0; i < amountFramesToRecord; i++)
+        {
+            WriteToVAT(i);
+        }
         
-        material.SetFloat("_amountFrames", (int)Mathf.Sqrt(amountFramesToRecord));
+        //WriteToVAT(0);
+        
+        material.SetFloat("_amountFrames", amountFramesWidth);
         material.SetFloat("_frameWidth", frameWidth);
         material.SetTexture("_MainTex", renderTexture);
 
         SaveTexture();
     }
-    
+
+    private void OnDisable()
+    {
+        gpuVertices?.Dispose();
+        gpuVertices = null;
+        
+        for (int i = 0; i < gpuVerticesArray.Length; i++)
+        {
+            gpuVerticesArray[i]?.Release();
+            gpuVerticesArray[i] = null;
+        }
+    }
+
 
     private void WriteToVAT(int currentFrame)
     {
         gpuVertices ??= mesh.GetVertexBuffer(0);
 
-        int frameX = currentFrame % (int)Mathf.Sqrt(amountFramesToRecord);
-        int frameY = (int)(currentFrame / Mathf.Sqrt(amountFramesToRecord));
+        int frameX = currentFrame % amountFramesWidth;
+        int frameY = currentFrame / amountFramesWidth;
         frameX *= frameWidth;
         frameY *= frameWidth;
         Vector2 startPixel = new Vector2(frameX, frameY);
@@ -71,7 +88,7 @@ public class VATSetup : MonoBehaviour
         //gpuVerticesArray[currentFrame].GetData(vertices);
         
         VATWriter.SetTexture(kernelID, "result", renderTexture);
-        VATWriter.SetBuffer(kernelID, "gpuVertices", gpuVertices);
+        VATWriter.SetBuffer(kernelID, "gpuVertices", gpuVerticesArray[currentFrame]);
         VATWriter.SetVector("startPixel", startPixel);
         VATWriter.SetInt("frameWidth", frameWidth);
         VATWriter.Dispatch(kernelID, (int)threadGroupSize.x, 1, 1);
@@ -92,16 +109,9 @@ public class VATSetup : MonoBehaviour
             animator.Update(0f);
 
             skinnedMeshRenderer.BakeMesh(bakedMesh);
-
-            GraphicsBuffer tempGpuVertices = new GraphicsBuffer(GraphicsBuffer.Target.Structured, vertexCount,
-                bakedMesh.GetVertexBufferStride(0));
-            vertex[] vertices = new vertex[vertexCount];
-            for (int j = 0; j < vertexCount; j++)
-            {
-                vertices[i].position = bakedMesh.vertices[i];
-            }
-            tempGpuVertices.SetData(vertices);
-            gpuVerticesArray[i] = tempGpuVertices;
+            
+            
+            gpuVerticesArray[i] = bakedMesh.GetVertexBuffer(0);
 
             sampleTime += perFrameTime;
         }
@@ -113,7 +123,7 @@ public class VATSetup : MonoBehaviour
     }
     Texture2D toTexture2D(RenderTexture rTex)
     {
-        Texture2D tex = new Texture2D(frameWidth, frameWidth, TextureFormat.RGBAFloat, false);
+        Texture2D tex = new Texture2D(textureWidth, textureWidth, TextureFormat.RGBAFloat, false);
         RenderTexture.active = rTex;
         tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
         tex.Apply();
