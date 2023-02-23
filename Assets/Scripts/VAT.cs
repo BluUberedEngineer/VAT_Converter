@@ -331,10 +331,3 @@ public class VAT
 
     #endregion
 }
-
-struct vertex
-{
-    public float3 position;
-    public float3 normal;
-    public float4 tangent;
-};
