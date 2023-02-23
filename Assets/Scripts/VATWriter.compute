@@ -15,6 +15,7 @@ float2 startPixel;
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    //write something for the second uv channel so it can look up which vat pixel it should use
     int x = id.x % frameWidth + startPixel.x;
     int y = id.x / frameWidth + startPixel.y;
     result[float2(x, y)] = float4(gpuVertices[id.x].position, 1);

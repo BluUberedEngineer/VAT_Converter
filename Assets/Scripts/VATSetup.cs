@@ -54,7 +54,7 @@ public class VATSetup : MonoBehaviour
             WriteToVAT(i);
         }
         
-        material.SetFloat("_amountFrames", amountFramesWidth);
+        material.SetFloat("_amountFrames", amountFramesToRecord);
         material.SetFloat("_frameWidth", frameWidth);
         material.SetTexture("_MainTex", renderTexture);
 
@@ -112,7 +112,7 @@ public class VATSetup : MonoBehaviour
             skinnedMeshRenderer.BakeMesh(bakedMesh);
             bakedMesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
-            GameObject tempObject = Instantiate(meshObject, new Vector3(i, 0, 0), Quaternion.identity);
+            //GameObject tempObject = Instantiate(meshObject, new Vector3(i, 0, 0), Quaternion.identity);
             
             // bakedMesh.name = i.ToString();
             // tempObject.GetComponent<MeshFilter>().mesh = bakedMesh;
