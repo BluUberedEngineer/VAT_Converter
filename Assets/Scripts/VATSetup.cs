@@ -84,8 +84,8 @@ public class VATSetup : MonoBehaviour
         frameY *= frameWidth;
         Vector2 startPixel = new Vector2(frameX, frameY);
         
-        vertex[] vertices = new vertex[vertexCount];
-        gpuVerticesArray[currentFrame].GetData(vertices);
+        // vertex[] vertices = new vertex[vertexCount];
+        // gpuVerticesArray[currentFrame].GetData(vertices);
         
         VATWriter.SetTexture(kernelID, "result", renderTexture);
         VATWriter.SetBuffer(kernelID, "gpuVertices", gpuVerticesArray[currentFrame]);
@@ -110,13 +110,15 @@ public class VATSetup : MonoBehaviour
             animator.Update(0f);
 
             skinnedMeshRenderer.BakeMesh(bakedMesh);
+            bakedMesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
             GameObject tempObject = Instantiate(meshObject, new Vector3(i, 0, 0), Quaternion.identity);
-            bakedMesh.name = i.ToString();
-            tempObject.GetComponent<MeshFilter>().mesh = bakedMesh;
             
-            vertex[] vertices = new vertex[vertexCount];
-            bakedMesh.GetVertexBuffer(0).GetData(vertices);
+            // bakedMesh.name = i.ToString();
+            // tempObject.GetComponent<MeshFilter>().mesh = bakedMesh;
+            //
+            // vertex[] vertices = new vertex[vertexCount];
+            // bakedMesh.GetVertexBuffer(0).GetData(vertices);
 
             gpuVerticesArray[i] = bakedMesh.GetVertexBuffer(0);
 

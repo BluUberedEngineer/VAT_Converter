@@ -17,5 +17,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int x = id.x % frameWidth + startPixel.x;
     int y = id.x / frameWidth + startPixel.y;
-    result[float2(x, y)] = float4(gpuVertices[id.x].position * 10, 1);
+    result[float2(x, y)] = float4(gpuVertices[id.x].position, 1);
 }
