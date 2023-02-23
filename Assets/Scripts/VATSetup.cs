@@ -13,6 +13,8 @@ public class VATSetup : MonoBehaviour
     [SerializeField] private AnimationClip animationClip;
     [SerializeField] private CustomRenderTexture renderTexture;
     [SerializeField] private Material material;
+
+    public GameObject meshObject;
     
     private int amountFramesToRecord;
     private int amountFramesWidth;
@@ -30,7 +32,7 @@ public class VATSetup : MonoBehaviour
         mesh = skinnedMeshRenderer.sharedMesh;
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
-        amountFramesToRecord = Mathf.ClosestPowerOfTwo((int)(animationClip.frameRate * animationClip.length));
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
         amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
@@ -41,7 +43,7 @@ public class VATSetup : MonoBehaviour
         renderTexture.enableRandomWrite = true;
         
         kernelID = 0;
-        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out uint threadGroupSizeY, out _);
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
         
         threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
 
@@ -51,8 +53,6 @@ public class VATSetup : MonoBehaviour
         {
             WriteToVAT(i);
         }
-        
-        //WriteToVAT(0);
         
         material.SetFloat("_amountFrames", amountFramesWidth);
         material.SetFloat("_frameWidth", frameWidth);
@@ -77,15 +77,15 @@ public class VATSetup : MonoBehaviour
     private void WriteToVAT(int currentFrame)
     {
         gpuVertices ??= mesh.GetVertexBuffer(0);
-
+        
         int frameX = currentFrame % amountFramesWidth;
         int frameY = currentFrame / amountFramesWidth;
         frameX *= frameWidth;
         frameY *= frameWidth;
         Vector2 startPixel = new Vector2(frameX, frameY);
-
-        //vertex[] vertices = new vertex[vertexCount];
-        //gpuVerticesArray[currentFrame].GetData(vertices);
+        
+        vertex[] vertices = new vertex[vertexCount];
+        gpuVerticesArray[currentFrame].GetData(vertices);
         
         VATWriter.SetTexture(kernelID, "result", renderTexture);
         VATWriter.SetBuffer(kernelID, "gpuVertices", gpuVerticesArray[currentFrame]);
@@ -99,18 +99,25 @@ public class VATSetup : MonoBehaviour
         int iLayer = 0;
         AnimatorStateInfo aniStateInfo = animator.GetCurrentAnimatorStateInfo(iLayer);
 
-        Mesh bakedMesh = new Mesh();
         float sampleTime = 0;
+        float perFrameTime = (float)1 / amountFramesToRecord;
 
-        float perFrameTime = animationClip.length / amountFramesToRecord;
         for (int i = 0; i < amountFramesToRecord; i++)
         {
+            Mesh bakedMesh = new Mesh();
+
             animator.Play(aniStateInfo.shortNameHash, iLayer, sampleTime);
             animator.Update(0f);
 
             skinnedMeshRenderer.BakeMesh(bakedMesh);
+
+            GameObject tempObject = Instantiate(meshObject, new Vector3(i, 0, 0), Quaternion.identity);
+            bakedMesh.name = i.ToString();
+            tempObject.GetComponent<MeshFilter>().mesh = bakedMesh;
             
-            
+            vertex[] vertices = new vertex[vertexCount];
+            bakedMesh.GetVertexBuffer(0).GetData(vertices);
+
             gpuVerticesArray[i] = bakedMesh.GetVertexBuffer(0);
 
             sampleTime += perFrameTime;
