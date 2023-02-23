@@ -56,8 +56,8 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _amountFrames: 19
-    - _currentFrame: 0
+    - _amountFrames: 371
+    - _currentFrame: 8
     - _frameWidth: 89
     m_Colors: []
   m_BuildTextureStacks: []

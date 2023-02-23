@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class VATSetup : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class VATSetup : MonoBehaviour
     [SerializeField] private AnimationClip animationClip;
     [SerializeField] private CustomRenderTexture renderTexture;
     [SerializeField] private Material material;
+    [SerializeField] private int currentDisplayFrame;
 
     public GameObject meshObject;
     
@@ -26,6 +28,7 @@ public class VATSetup : MonoBehaviour
     private int textureWidth;
     private int frameWidth;
     private int vertexCount => mesh.vertexCount;
+
     
     private void Awake()
     {
@@ -41,11 +44,22 @@ public class VATSetup : MonoBehaviour
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         renderTexture.enableRandomWrite = true;
-        
+
         kernelID = 0;
         VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
         
         threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+
+        VertexAttributeDescriptor uv2 = new VertexAttributeDescriptor(VertexAttribute.TexCoord1, VertexAttributeFormat.Float32, 2, 3);
+        MeshExtensions.AddVertexAttribute(mesh, uv2);
+
+        int descriptorsCount = MeshExtensions.GetVertexAttribCount(mesh);
+        VertexAttributeDescriptor[] descriptors = new VertexAttributeDescriptor[descriptorsCount];
+        mesh.GetVertexAttributes(descriptors);
+        foreach (var descriptor in descriptors)
+        {
+            Debug.Log(descriptor);
+        }
 
         FillGPUVerticesArray();
 
@@ -61,9 +75,14 @@ public class VATSetup : MonoBehaviour
         SaveTexture();
     }
 
+    private void Start()
+    {
+        skinnedMeshRenderer.enabled = false;
+    }
+
     private void OnDisable()
     {
-        gpuVertices?.Dispose();
+        gpuVertices?.Release();
         gpuVertices = null;
         
         for (int i = 0; i < gpuVerticesArray.Length; i++)
@@ -76,7 +95,7 @@ public class VATSetup : MonoBehaviour
 
     private void WriteToVAT(int currentFrame)
     {
-        gpuVertices ??= mesh.GetVertexBuffer(0);
+        kernelID = 0;
         
         int frameX = currentFrame % amountFramesWidth;
         int frameY = currentFrame / amountFramesWidth;
@@ -93,7 +112,31 @@ public class VATSetup : MonoBehaviour
         VATWriter.SetInt("frameWidth", frameWidth);
         VATWriter.Dispatch(kernelID, (int)threadGroupSize.x, 1, 1);
     }
-    
+
+    private void ReadFromVAT(int currentFrame)
+    {
+        kernelID = 1;
+
+        gpuVertices ??= mesh.GetVertexBuffer(0);
+        
+        int frameX = currentFrame % amountFramesWidth;
+        int frameY = currentFrame / amountFramesWidth;
+        frameX *= frameWidth;
+        frameY *= frameWidth;
+        Vector2 startPixel = new Vector2(frameX, frameY);
+
+        VATWriter.SetTexture(kernelID, "result", renderTexture);
+        VATWriter.SetBuffer(kernelID, "gpuVertices", gpuVertices);
+        VATWriter.SetVector("startPixel", startPixel);
+        VATWriter.SetInt("frameWidth", frameWidth);
+        VATWriter.Dispatch(kernelID, (int)threadGroupSize.x, 1, 1);
+    }
+
+    private void Update()
+    {
+        ReadFromVAT(Time.frameCount % amountFramesToRecord);
+    }
+
     private void FillGPUVerticesArray()
     {
         int iLayer = 0;
