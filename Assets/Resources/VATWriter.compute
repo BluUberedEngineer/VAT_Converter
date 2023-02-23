@@ -21,9 +21,6 @@ void VATWriter (uint3 id : SV_DispatchThreadID)
     localCoords.x += startPixel.x;
     localCoords.y += startPixel.y;
     result[localCoords] = float4(gpuVertices[id.x].position, 1);
-    // float offset = 1.0f / 7794 * 0.5f;
-    // localCoords /= frameWidth;
-    // gpuUV2[id.x] = float2(localCoords.x + offset, localCoords.y + offset);
 }
 
 [numthreads(512,1,1)]
