@@ -12,17 +12,17 @@ public class VAT
     public Animator animator;
     public AnimationClip animationClip;
     public CustomRenderTexture renderTexture;
-    public int currentDisplayFrame;
+    public int amountFramesToRecord;
+    public int textureWidth;
     
+    private int currentDisplayFrame;
     private ComputeShader VATWriter;
-    private int amountFramesToRecord;
     private int amountFramesWidth;
     private Mesh mesh;
     private GraphicsBuffer gpuVertices;
     private GraphicsBuffer[] gpuVerticesArray;
     private Vector3 threadGroupSize;
     private int kernelID;
-    private int textureWidth;
     private int frameWidth;
     private int vertexCount => mesh.vertexCount;
 
@@ -51,9 +51,6 @@ public class VAT
         VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
         
         threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
-
-        VertexAttributeDescriptor uv2 = new VertexAttributeDescriptor(VertexAttribute.TexCoord1, VertexAttributeFormat.Float32, 2, 3);
-        MeshExtensions.AddVertexAttribute(mesh, uv2);
     }
 
     ~VAT()
@@ -96,11 +93,16 @@ public class VAT
         return renderTexture;
     }
 
-    public void ReadFromVAT(int currentFrame)
+    public void ReadFromVAT(Mesh newMesh, int currentFrame)
     {
+        if (newMesh.vertexCount != mesh.vertexCount)
+        {
+            Debug.LogWarning($"{newMesh.name} has {newMesh.vertexCount} vertices and {mesh.name} has {mesh.vertexCount} vertices. They should match unless you know what you are doing");
+        }
+
         kernelID = 1;
 
-        gpuVertices ??= mesh.GetVertexBuffer(0);
+        gpuVertices ??= newMesh.GetVertexBuffer(0);
         
         int frameX = currentFrame % amountFramesWidth;
         int frameY = currentFrame / amountFramesWidth;
@@ -139,18 +141,195 @@ public class VAT
         }
     }
     
-    // public void SaveTexture () {
-    //     byte[] bytes = toTexture2D(renderTexture).EncodeToPNG();
-    //     System.IO.File.WriteAllBytes(Application.dataPath + "/SavedScreen.png", bytes);
-    // }
-    // Texture2D toTexture2D(RenderTexture rTex)
-    // {
-    //     Texture2D tex = new Texture2D(textureWidth, textureWidth, TextureFormat.RGBAFloat, false);
-    //     RenderTexture.active = rTex;
-    //     tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
-    //     tex.Apply();
-    //     return tex;
-    // }
+    #region UpdateComponents
+
+    public void UpdateComponents(SkinnedMeshRenderer skinnedMeshRenderer, Animator animator, AnimationClip animationClip)
+    {
+        this.skinnedMeshRenderer = skinnedMeshRenderer;
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+    
+    public void UpdateComponents(Animator animator, AnimationClip animationClip)
+    {
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+    
+    public void UpdateComponents(AnimationClip animationClip)
+    {
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+    
+    public void UpdateComponents(Animator animator)
+    {
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+    
+    public void UpdateComponents(SkinnedMeshRenderer skinnedMeshRenderer)
+    {
+        this.skinnedMeshRenderer = skinnedMeshRenderer;
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+    
+    public void UpdateComponents(SkinnedMeshRenderer skinnedMeshRenderer, AnimationClip animationClip)
+    {
+        this.skinnedMeshRenderer = skinnedMeshRenderer;
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+    
+    public void UpdateComponents(SkinnedMeshRenderer skinnedMeshRenderer, Animator animator)
+    {
+        this.skinnedMeshRenderer = skinnedMeshRenderer;
+        this.animator = animator;
+        this.animationClip = animationClip;
+
+        VATWriter = Resources.Load<ComputeShader>("VATWriter");
+        
+        mesh = skinnedMeshRenderer.sharedMesh;
+        mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
+
+        amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
+        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
+        
+        textureWidth = frameWidth * amountFramesWidth;
+        gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
+        
+        renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+        renderTexture.enableRandomWrite = true;
+
+        kernelID = 0;
+        VATWriter.GetKernelThreadGroupSizes(kernelID, out uint threadGroupSizeX, out _, out _);
+        
+        threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
+    }
+
+    #endregion
 }
 
 struct vertex
