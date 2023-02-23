@@ -354,9 +354,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1044050bec7081c4ab05f9e6688f32c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1431720426}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1044050bec7081c4ab05f9e6688f32c8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1431720427}
   m_SourcePrefab: {fileID: 100100000, guid: 1044050bec7081c4ab05f9e6688f32c8, type: 3}
 --- !u!1 &445336095
 GameObject:
@@ -657,40 +654,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 80b0473bb9449884b8703e98789824cd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1255176965}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 80b0473bb9449884b8703e98789824cd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1255176964}
   m_SourcePrefab: {fileID: 100100000, guid: 80b0473bb9449884b8703e98789824cd, type: 3}
 --- !u!1 &1255176962 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 80b0473bb9449884b8703e98789824cd, type: 3}
   m_PrefabInstance: {fileID: 1255176961}
   m_PrefabAsset: {fileID: 0}
---- !u!137 &1255176963 stripped
-SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -1798255643521272252, guid: 80b0473bb9449884b8703e98789824cd, type: 3}
-  m_PrefabInstance: {fileID: 1255176961}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1255176964
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1255176962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fe5a9a7d93305340bb11cfbb5921dec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  VATWriter: {fileID: 7200000, guid: 35412995f95e8af40abd9750594152ea, type: 3}
-  skinnedMeshRenderer: {fileID: 1255176963}
-  animator: {fileID: 1255176965}
-  animationClip: {fileID: -203655887218126122, guid: 80b0473bb9449884b8703e98789824cd, type: 3}
-  renderTexture: {fileID: 0}
-  material: {fileID: 2100000, guid: 8e25f98422615bf4eaaa8805c8db8bb9, type: 2}
-  currentDisplayFrame: 0
-  meshObject: {fileID: 9222145267766597273, guid: 60f5a79da10dd894c8564927818ec281, type: 3}
 --- !u!95 &1255176965
 Animator:
   serializedVersion: 5
@@ -736,26 +705,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
---- !u!114 &1431720427
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1431720424}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fe5a9a7d93305340bb11cfbb5921dec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  VATWriter: {fileID: 7200000, guid: 35412995f95e8af40abd9750594152ea, type: 3}
-  skinnedMeshRenderer: {fileID: 1974068419}
-  animator: {fileID: 1431720426}
-  animationClip: {fileID: -203655887218126122, guid: 1044050bec7081c4ab05f9e6688f32c8, type: 3}
-  renderTexture: {fileID: 0}
-  material: {fileID: 0}
-  currentDisplayFrame: 0
-  meshObject: {fileID: 0}
 --- !u!1 &1458322688
 GameObject:
   m_ObjectHideFlags: 0
@@ -1168,11 +1117,6 @@ ReflectionProbe:
   m_UseOcclusionCulling: 1
   m_Importance: 1
   m_CustomBakedTexture: {fileID: 0}
---- !u!137 &1974068419 stripped
-SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -4571605982943762130, guid: 1044050bec7081c4ab05f9e6688f32c8, type: 3}
-  m_PrefabInstance: {fileID: 319272491}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2135445746
 GameObject:
   m_ObjectHideFlags: 0
