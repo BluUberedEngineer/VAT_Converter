@@ -35,7 +35,7 @@ int _FrameWidth;
 int _AmountFramesSqrt;
 int _TextureWidth;
 int _CurrentFrame;
-int _InstanceID;
+//int _InstanceID;
 CBUFFER_END
 
 
@@ -43,9 +43,9 @@ CBUFFER_END
 // UNITY_DEFINE_INSTANCED_PROP(int, _InstanceID)
 // UNITY_INSTANCING_CBUFFER_SCOPE_END
 
-// UNITY_INSTANCING_BUFFER_START(InstanceProperties)
-//     UNITY_DEFINE_INSTANCED_PROP(int, _InstanceID)
-// UNITY_INSTANCING_BUFFER_END(InstanceProperties)
+UNITY_INSTANCING_BUFFER_START(InstanceProperties)
+    UNITY_DEFINE_INSTANCED_PROP(int, _InstanceID)
+UNITY_INSTANCING_BUFFER_END(InstanceProperties)
 
 // NOTE: Do not ifdef the properties for dots instancing, but ifdef the actual usage.
 // Otherwise you might break CPU-side as property constant-buffer offsets change per variant.

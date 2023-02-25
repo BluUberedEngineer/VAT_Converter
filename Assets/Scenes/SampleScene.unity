@@ -654,7 +654,7 @@ MonoBehaviour:
   animator: {fileID: 1823069431}
   animationClip: {fileID: -203655887218126122, guid: 2bb0c5e54f9961642aafe1deca19cda8, type: 3}
   meshFilter: {fileID: 2135445748}
-  animationSpeed: 2
+  animationSpeed: 1
   displayMat: {fileID: 2100000, guid: b9050462c981b2348b46840e1fc158dc, type: 2}
   rt: {fileID: 0}
 --- !u!4 &1163651207
@@ -879,10 +879,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17b08ad0bd8455749b008ab6f5ff8295, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  instanceCount: 10000
-  instanceMesh: {fileID: -3464021985766637356, guid: 546068acd86163b419e83d0355db8fb8, type: 3}
-  instanceMaterial: {fileID: 2100000, guid: b9050462c981b2348b46840e1fc158dc, type: 2}
-  subMeshIndex: 0
+  range: 100
+  mesh: {fileID: -3464021985766637356, guid: 546068acd86163b419e83d0355db8fb8, type: 3}
+  material: {fileID: 2100000, guid: b9050462c981b2348b46840e1fc158dc, type: 2}
 --- !u!4 &1513471541
 Transform:
   m_ObjectHideFlags: 0

@@ -30,6 +30,9 @@ struct Varyings
 float4 GetShadowPositionHClip(Attributes input)
 {
     float2 vertCoords = float2(input.id % (uint)_FrameWidth, input.id / (uint)_FrameWidth);
+    int instanceID = UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _InstanceID);
+    int instanceOffset = instanceID % 100 + instanceID / 100;
+    _CurrentFrame = (_CurrentFrame + instanceOffset) % 371;
     float2 startPos = float2(_CurrentFrame % _AmountFramesSqrt, _CurrentFrame / _AmountFramesSqrt) * _FrameWidth;
     vertCoords += startPos;
     vertCoords += float2(0.5, 0.5);

@@ -139,15 +139,6 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
 //                  Vertex and Fragment functions                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-StructuredBuffer<int> _InstanceIDBuffer;
-int _Offset;
-
-void setup()
-{
-    int data = _InstanceIDBuffer[unity_InstanceID];
-    _Offset = data;
-}
-
 // Used in Standard (Physically Based) shader
 Varyings LitPassVertex(Attributes input)
 {
@@ -156,17 +147,17 @@ Varyings LitPassVertex(Attributes input)
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-    //UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _InstanceID)
 
     float2 vertCoords = float2(input.id % (uint)_FrameWidth, input.id / (uint)_FrameWidth);
-    _CurrentFrame = (_CurrentFrame + _Offset) % 371;
-    float2 offsetPos = float2(_Offset % 100, _Offset / 100);
+    int instanceID = UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _InstanceID);
+    int instanceOffset = instanceID % 100 + instanceID / 100;
+    _CurrentFrame = (_CurrentFrame + instanceOffset) % 371;
     float2 startPos = float2(_CurrentFrame % _AmountFramesSqrt, _CurrentFrame / _AmountFramesSqrt) * _FrameWidth;
     vertCoords += startPos;
     vertCoords += float2(0.5, 0.5);
     vertCoords /= _TextureWidth;
     float4 texCoords = float4(vertCoords, 0, 0);
-    float3 position = tex2Dlod(_VAT, texCoords) + float3(offsetPos.x, 0, offsetPos.y);
+    float3 position = tex2Dlod(_VAT, texCoords);
 
     VertexPositionInputs vertexInput = GetVertexPositionInputs(position);
 
