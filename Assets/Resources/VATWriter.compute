@@ -10,7 +10,6 @@ struct vertex
 
 RWTexture2D<float4> result;
 RWStructuredBuffer<vertex> gpuVertices;
-RWStructuredBuffer<float2> gpuUV2;
 int frameWidth;
 float2 startPixel;
 

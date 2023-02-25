@@ -14,16 +14,16 @@ public class VAT
     public CustomRenderTexture renderTexture;
     public int amountFramesToRecord;
     public int textureWidth;
+    public int frameWidth;
+    public int amountFramesSqrt;
     
     private int currentDisplayFrame;
     private ComputeShader VATWriter;
-    private int amountFramesWidth;
     private Mesh mesh;
     private GraphicsBuffer gpuVertices;
     private GraphicsBuffer[] gpuVerticesArray;
     private Vector3 threadGroupSize;
     private int kernelID;
-    private int frameWidth;
     private int vertexCount => mesh.vertexCount;
 
     public VAT(SkinnedMeshRenderer skinnedMeshRenderer, Animator animator, AnimationClip animationClip)
@@ -38,10 +38,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = Mathf.CeilToInt(Mathf.Sqrt(amountFramesToRecord));
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -53,9 +53,8 @@ public class VAT
         threadGroupSize.x = Mathf.CeilToInt((float)vertexCount / threadGroupSizeX);
     }
 
-    ~VAT()
+    public void Destroy()
     {
-        Debug.Log($"destroyed");
         gpuVertices?.Release();
         gpuVertices = null;
         
@@ -77,8 +76,8 @@ public class VAT
         {
             kernelID = 0;
         
-            int frameX = i % amountFramesWidth;
-            int frameY = i / amountFramesWidth;
+            int frameX = i % amountFramesSqrt;
+            int frameY = i / amountFramesSqrt;
             frameX *= frameWidth;
             frameY *= frameWidth;
             Vector2 startPixel = new Vector2(frameX, frameY);
@@ -93,8 +92,10 @@ public class VAT
         return renderTexture;
     }
 
+    //Use VATReader surface shader
     public void ReadFromVAT(Mesh newMesh, int currentFrame)
     {
+        Debug.LogWarning("Use the VATReader surface shader");
         if (newMesh.vertexCount != mesh.vertexCount)
         {
             Debug.LogWarning($"{newMesh.name} has {newMesh.vertexCount} vertices and {mesh.name} has {mesh.vertexCount} vertices. They should match unless you know what you are doing");
@@ -104,8 +105,8 @@ public class VAT
 
         gpuVertices ??= newMesh.GetVertexBuffer(0);
         
-        int frameX = currentFrame % amountFramesWidth;
-        int frameY = currentFrame / amountFramesWidth;
+        int frameX = currentFrame % amountFramesSqrt;
+        int frameY = currentFrame / amountFramesSqrt;
         frameX *= frameWidth;
         frameY *= frameWidth;
         Vector2 startPixel = new Vector2(frameX, frameY);
@@ -155,10 +156,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -181,10 +182,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -207,10 +208,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -233,10 +234,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -260,10 +261,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -287,10 +288,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -314,10 +315,10 @@ public class VAT
         mesh.vertexBufferTarget |= GraphicsBuffer.Target.Structured;
 
         amountFramesToRecord = (int)(animationClip.frameRate * animationClip.length);
-        amountFramesWidth = (int)Mathf.Sqrt(amountFramesToRecord);
+        amountFramesSqrt = (int)Mathf.Sqrt(amountFramesToRecord);
         frameWidth = Mathf.CeilToInt(Mathf.Sqrt(vertexCount));
         
-        textureWidth = frameWidth * amountFramesWidth;
+        textureWidth = frameWidth * amountFramesSqrt;
         gpuVerticesArray = new GraphicsBuffer[amountFramesToRecord];
         
         renderTexture = new CustomRenderTexture(textureWidth, textureWidth, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);

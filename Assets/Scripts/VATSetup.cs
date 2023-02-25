@@ -10,9 +10,19 @@ public class VATSetup : MonoBehaviour
     [SerializeField] private AnimationClip animationClip;
     [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private float animationSpeed;
-    private CustomRenderTexture rt;
+    [SerializeField] private Material displayMat;
+    public CustomRenderTexture rt;
     private Mesh mesh;
     private VAT vat;
+
+    #region ShaderProperties
+    private readonly static int Vat = Shader.PropertyToID("_VAT");
+    private readonly static int FrameWidth = Shader.PropertyToID("_FrameWidth");
+    private readonly static int AmountFramesSqrt = Shader.PropertyToID("_AmountFramesSqrt");
+    private readonly static int TextureWidth = Shader.PropertyToID("_TextureWidth");
+    private readonly static int CurrentFrame = Shader.PropertyToID("_CurrentFrame");
+    #endregion
+    
     private void Awake()
     {
         vat = new VAT(skinnedMeshRenderer, animator, animationClip);
@@ -21,11 +31,21 @@ public class VATSetup : MonoBehaviour
 
         mesh = MeshExtensions.CopyMesh(skinnedMeshRenderer.sharedMesh);
         meshFilter.sharedMesh = mesh;
+        
+        displayMat.SetTexture(Vat, rt);
+        displayMat.SetInt(FrameWidth, vat.frameWidth);
+        displayMat.SetInt(AmountFramesSqrt, vat.amountFramesSqrt);
+        displayMat.SetInt(TextureWidth, vat.textureWidth);
+    }
+
+    private void OnDisable()
+    {
+        vat.Destroy();
     }
 
     private void Update()
     {
-        vat.ReadFromVAT(mesh, (int)(Time.frameCount / animationSpeed) % vat.amountFramesToRecord);
+        displayMat.SetInt(CurrentFrame, (int)(Time.frameCount / animationSpeed) % vat.amountFramesToRecord);
     }
 
     public void SaveTexture (RenderTexture rTex, int imageWidth, int imageHeight) {
