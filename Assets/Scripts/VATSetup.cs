@@ -43,7 +43,7 @@ public class VATSetup : MonoBehaviour
         vat.Destroy();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         displayMat.SetInt(CurrentFrame, (int)(Time.frameCount / animationSpeed) % vat.amountFramesToRecord);
     }
